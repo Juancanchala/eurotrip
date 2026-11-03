@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eurotrip en familia - Simulador de escenarios</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<style>
+:root{
+  --ink:#0F2A3D; --muted:#4A6072; --ground:#F1F5F8; --card:#FFFFFF; --line:#D3DEE6;
+  --blue:#1B6CA8; --orange:#C2410C; --chip:#E3EBF1; --night:#1E4560;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--ground);line-height:1.45}
+h1,h2,h3{font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;margin:0}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+a{color:var(--blue)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+header.top{background:var(--ink);color:#fff;padding:24px 40px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+header.top h1{font-size:30px;letter-spacing:-.5px}
+header.top p{margin:4px 0 0;font-size:14px;color:#C9D8E3}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chips span{background:var(--night);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:500}
+
+nav.tabs{background:#fff;border-bottom:1px solid var(--line);padding:0 40px;display:flex;flex-wrap:wrap;gap:4px}
+nav.tabs a{display:inline-flex;align-items:center;border-bottom:3px solid transparent;color:var(--muted);font-weight:500;font-size:14px;padding:0 18px;min-height:48px;text-decoration:none}
+nav.tabs a.on{border-bottom-color:var(--blue);color:var(--ink);font-weight:600}
+
+.layout{display:flex;flex-wrap:wrap;gap:28px;padding:32px 40px 48px;align-items:flex-start}
+main{flex:999 1 760px;min-width:0;display:flex;flex-direction:column;gap:28px}
+aside{flex:1 1 320px;min-width:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+
+.notice{background:#FFF4E5;border:1px solid #F0C98A;border-radius:12px;padding:12px 16px;font-size:13px;color:#7A3A06}
+.head-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.head-row h2{font-size:24px}
+.head-row p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.toggle{display:flex;gap:6px;background:var(--chip);border-radius:10px;padding:4px}
+.toggle button{border:none;border-radius:8px;padding:0 18px;min-height:40px;font-size:14px;font-weight:600;background:transparent;color:#33495A}
+.toggle button.on{background:var(--ink);color:#fff}
+
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.card.sel{border:2px solid var(--blue);box-shadow:0 8px 24px rgba(27,108,168,.18)}
+.card .title{display:flex;gap:12px;align-items:center}
+.card .letter{width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.card h3{font-size:17px;line-height:1.25}
+.tag{align-self:flex-start;background:var(--chip);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:#1F4A6B}
+.route{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:#33495A}
+.route span.s{background:var(--ground);border-radius:6px;padding:3px 8px}
+.route span.a{color:#6B8294}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--ground);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.stat small{font-size:12px;color:var(--muted)}
+.stat strong{font-size:15px}
+.lines{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.lines div{display:flex;justify-content:space-between;gap:8px}
+.lines span:first-child{color:#33495A}
+.lines span:last-child{font-weight:500}
+.total{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:2px}
+.total small{font-size:12px;color:var(--muted)}
+.total strong{font-size:28px;letter-spacing:-.5px;font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif}
+.total em{font-style:normal;font-size:13px;color:var(--muted)}
+.perday{display:flex;flex-direction:column;gap:2px}
+.perday small{font-size:12px;color:var(--muted)}
+.perday strong{font-size:15px}
+.concl{margin:0;font-size:14px;color:#33495A;flex-grow:1}
+.pick{min-height:44px;border-radius:10px;font-size:14px;font-weight:600;border:1px solid var(--blue);background:#fff;color:var(--blue)}
+.card.sel .pick{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+section.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px}
+section.panel h2{font-size:20px}
+.panel-sub{margin:-8px 0 0;font-size:14px;color:var(--muted)}
+
+/* Mapa */
+.mapwrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#EAF1F6}
+#map{height:440px;width:100%}
+#mapFallback{padding:8px}
+#mapFallback svg{display:block;width:100%;height:auto;max-height:520px}
+.legend{display:flex;flex-wrap:wrap;gap:18px;font-size:13px;color:#33495A}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{display:inline-block;width:34px;height:0;border-top:4px solid var(--blue)}
+.legend i.fly{border-top:4px dashed var(--orange)}
+.legs{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.legs li{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--ground);border-radius:10px;padding:10px 14px;font-size:14px}
+.legs .mode{border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600}
+.legs .mode.tren{background:#DCEEFB;color:#0F4C81}
+.legs .mode.vuelo{background:#FDE7D3;color:#8A3B07}
+.legs .h{margin-left:auto;color:var(--muted)}
+
+.bar-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.bar-row .lbl{width:150px;font-size:14px;font-weight:600;flex:none}
+.bar-row .track{flex:1 1 240px;background:var(--chip);border-radius:8px;height:22px;overflow:hidden}
+.bar-row .fill{height:22px;border-radius:8px;background:#7C9BB3}
+.bar-row.on .fill{background:var(--blue)}
+.bar-row .val{width:110px;text-align:right;font-weight:600;font-size:14px;flex:none}
+
+.free-head{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end}
+.free-head p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{background:var(--ground);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi small{font-size:12px;color:var(--muted)}
+.kpi strong{font-size:20px}
+.extras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.extra{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.extra strong{font-size:17px}
+.extra small{font-size:13px;color:var(--muted)}
+.badge{align-self:flex-start;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600}
+.badge.ok{background:#DCEEFB;color:#0F4C81}
+.badge.no{background:#FDE7D3;color:#8A3B07}
+
+/* Tasa */
+.fxbox{display:flex;flex-direction:column;gap:12px;background:var(--ground);border-radius:12px;padding:16px}
+.fxstatus{font-size:14px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;background:#7C9BB3;flex:none}
+.dot.live{background:#1B7F4B}
+.dot.cache{background:#B7791F}
+.dot.manual{background:var(--blue)}
+.assump{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;font-size:13px;color:var(--muted)}
+.assump label{display:flex;flex-direction:column;gap:4px}
+.assump input{border:1px solid #AFC0CE;border-radius:8px;padding:0 10px;min-height:44px;width:130px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}
+.btn2{min-height:44px;border-radius:10px;font-size:14px;font-weight:600;border:1px solid var(--blue);background:#fff;color:var(--blue);padding:0 16px}
+.credit{font-size:12px;color:var(--muted)}
+
+.ai-head{background:var(--blue);color:#fff;padding:16px 20px}
+.ai-head strong{font-size:17px;display:block}
+.ai-head span{font-size:13px;color:#E3F0FA}
+.msgs{padding:20px;display:flex;flex-direction:column;gap:12px;font-size:14px}
+.msgs div{max-width:88%;padding:10px 14px}
+.msgs .u{align-self:flex-end;background:var(--chip);border-radius:14px 14px 4px 14px}
+.msgs .b{align-self:flex-start;background:var(--ground);border-radius:14px 14px 14px 4px}
+.sugg{padding:0 20px 16px;display:flex;flex-wrap:wrap;gap:8px}
+.sugg button{background:#fff;border:1px solid var(--blue);color:var(--blue);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:500;min-height:44px}
+.ask{border-top:1px solid var(--line);padding:14px 20px;display:flex;gap:8px}
+.ask input{flex:1;min-width:0;border:1px solid #AFC0CE;border-radius:10px;padding:0 14px;min-height:44px;font-size:14px;font-family:inherit;color:var(--ink)}
+.ask button{background:var(--orange);color:#fff;border:none;border-radius:10px;width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+
+@media (max-width:1100px){
+  .cards{grid-template-columns:1fr}
+  .extras{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  header.top,nav.tabs,.layout{padding-left:16px;padding-right:16px}
+  .layout{padding-top:20px}
+  header.top h1{font-size:24px}
+  .bar-row .lbl,.bar-row .val{width:auto}
+  #map{height:340px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>Eurotrip en familia</h1>
+    <p>Eje del viaje: Madrid · Guadarrama, con salida a París y Suiza</p>
+  </div>
+  <div class="chips">
+    <span>Salida 6–7 oct 2027</span>
+    <span>Regreso por confirmar · 2,5 a 3 semanas</span>
+    <span>2 adultos + 1 niño [edad]</span>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Módulos">
+  <a class="on" href="#simulador">Simulador de escenarios</a>
+  <a href="#mapa">Mapa</a>
+  <a href="#presupuesto">Presupuesto</a>
+  <a href="#libres">Días libres</a>
+  <a href="#tasa">Tasa del euro</a>
+</nav>
+
+<div class="layout">
+  <main>
+    <div class="notice">Mockup con valores de ejemplo (costos, horas y días mínimos de cada extra). Los reemplazas por tus estimados reales.</div>
+
+    <section id="simulador">
+      <div class="head-row">
+        <div>
+          <h2>Tres formas de hacer París y Suiza</h2>
+          <p>Costo total para los tres viajeros: vuelos, trenes, hospedaje y comidas.</p>
+        </div>
+        <div class="toggle" role="group" aria-label="Moneda">
+          <button type="button" id="btnCOP" class="on">COP</button>
+          <button type="button" id="btnEUR">EUR</button>
+        </div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section class="panel" id="mapa">
+      <h2 id="mapTitle">Mapa de la ruta</h2>
+      <p class="panel-sub">La ruta cambia con el escenario que estés analizando.</p>
+      <div class="mapwrap">
+        <div id="map" role="img" aria-label="Mapa de la ruta del escenario elegido"></div>
+        <div id="mapFallback" hidden></div>
+      </div>
+      <div class="legend">
+        <span><i></i> Tren</span>
+        <span><i class="fly"></i> Vuelo</span>
+      </div>
+      <ul class="legs" id="legs"></ul>
+    </section>
+
+    <section class="panel" id="presupuesto">
+      <h2>Comparación de costo total</h2>
+      <div id="bars" style="display:flex;flex-direction:column;gap:12px"></div>
+    </section>
+
+    <section class="panel" id="libres">
+      <div class="free-head">
+        <div>
+          <h2 id="freeTitle"></h2>
+          <p id="freeSub"></p>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><small>Días libres</small><strong id="remDays"></strong></div>
+          <div class="kpi"><small>Presupuesto restante</small><strong id="remBudget"></strong></div>
+        </div>
+      </div>
+      <div class="extras" id="extras"></div>
+    </section>
+
+    <section class="panel" id="tasa">
+      <h2>Tasa del euro y supuestos</h2>
+      <div class="fxbox">
+        <div class="fxstatus"><span class="dot" id="fxDot"></span><span id="fxText">Consultando la tasa…</span></div>
+        <div class="assump">
+          <label>EUR a COP (base)<input id="inRate" type="number" value="4500" min="1000" step="1"></label>
+          <label>Colchón sobre la tasa (%)<input id="inCushion" type="number" value="3" min="0" max="20" step="0.5"></label>
+          <label>Presupuesto objetivo en EUR<input id="inBudget" type="number" value="9000" min="0" step="100"></label>
+          <label>Días totales del viaje<input id="inDays" type="number" value="21" min="7" max="40" step="1"></label>
+          <button type="button" class="btn2" id="btnFx">Actualizar tasa</button>
+        </div>
+        <div class="credit" id="fxApplied"></div>
+        <div class="credit"><a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a>. Esta fuente se actualiza una vez al día.</div>
+      </div>
+    </section>
+  </main>
+
+  <aside aria-label="Asistente de viaje">
+    <div class="ai-head"><strong>Asistente de viaje</strong><span>Conoce tus escenarios y tu presupuesto</span></div>
+    <div class="msgs">
+      <div class="u">¿Qué pasa si agregamos un día más en París?</div>
+      <div class="b">Aquí la respuesta del asistente: compara el costo adicional con tu presupuesto restante y sugiere qué día sacrificar.</div>
+      <div class="u">¿Conviene entrar por Chur y salir por Torino?</div>
+      <div class="b">Aquí la respuesta: ventajas de la ruta abierta frente al ida y vuelta, con el costo de cada tramo.</div>
+    </div>
+    <div class="sugg">
+      <button type="button">Compara A y C</button>
+      <button type="button">¿Cabe Barcelona?</button>
+      <button type="button">Hospedaje alterno a St. Moritz</button>
+    </div>
+    <div class="ask">
+      <label class="sr" for="pregunta">Pregunta al asistente</label>
+      <input id="pregunta" type="text" placeholder="Pregunta sobre la ruta, costos o días…">
+      <button type="button" aria-label="Enviar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+(function () {
+  /* ---------- Datos (valores de ejemplo, editables) ---------- */
+  var COORDS = {
+    'Madrid': [40.4168, -3.7038],
+    'Chur':   [46.8499, 9.5329],
+    'Tirano': [46.2149, 10.1699],
+    'Torino': [45.0703, 7.6869],
+    'París':  [48.8566, 2.3522]
+  };
+
+  var scenarios = [
+    { id: 'A', name: 'Ruta abierta por los Alpes hasta París', kind: 'Abierto: entra por un punto, sale por otro',
+      suiza: 2, paris: 2,
+      legs: [
+        { a: 'Madrid', b: 'Chur',   mode: 'vuelo', h: 3 },
+        { a: 'Chur',   b: 'Tirano', mode: 'tren',  h: 4 },
+        { a: 'Tirano', b: 'Torino', mode: 'tren',  h: 3 },
+        { a: 'Torino', b: 'París',  mode: 'tren',  h: 5 },
+        { a: 'París',  b: 'Madrid', mode: 'vuelo', h: 2 }
+      ],
+      lines: [['Vuelos',640],['Trenes',380],['Hospedaje',720],['Comidas',450]],
+      concl: 'Cuesta más en bruto, pero no repite tramos y deja más tiempo en cada destino.' },
+    { id: 'B', name: 'Suiza en 1 día y París en 2', kind: 'Ida y vuelta por Madrid',
+      suiza: 1, paris: 2,
+      legs: [
+        { a: 'Madrid', b: 'Chur',   mode: 'vuelo', h: 3 },
+        { a: 'Chur',   b: 'Madrid', mode: 'vuelo', h: 3 },
+        { a: 'Madrid', b: 'París',  mode: 'vuelo', h: 2 },
+        { a: 'París',  b: 'Madrid', mode: 'vuelo', h: 2 }
+      ],
+      lines: [['Vuelos',520],['Trenes',260],['Hospedaje',560],['Comidas',360]],
+      concl: 'El más económico, pero Suiza queda comprimida en un solo día.' },
+    { id: 'C', name: 'Suiza en 2 días y París en 1', kind: 'Ida y vuelta por Madrid',
+      suiza: 2, paris: 1,
+      legs: [
+        { a: 'Madrid', b: 'Chur',   mode: 'vuelo', h: 3 },
+        { a: 'Chur',   b: 'Madrid', mode: 'vuelo', h: 3 },
+        { a: 'Madrid', b: 'París',  mode: 'vuelo', h: 2 },
+        { a: 'París',  b: 'Madrid', mode: 'vuelo', h: 2 }
+      ],
+      lines: [['Vuelos',560],['Trenes',300],['Hospedaje',640],['Comidas',400]],
+      concl: 'Punto medio: pernocta en los Alpes sin alargar demasiado el viaje.' }
+  ];
+  var extrasBase = [
+    { name: 'Toledo', n: 1 },
+    { name: 'Barcelona', n: 2 },
+    { name: 'Portugal', n: 4 }
+  ];
+
+  var state = { sel: 'A', cur: 'COP', baseRate: 4500, fx: 'none', fxDate: '' };
+
+  /* ---------- Utilidades ---------- */
+  function el(id) { return document.getElementById(id); }
+  function group(n) {
+    var s = String(Math.round(n)), out = '';
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 === 0) out += '.';
+      out += s.charAt(i);
+    }
+    return out;
+  }
+  function num(id, fallback) { var v = parseFloat(el(id).value); return isNaN(v) ? fallback : v; }
+  function money(eur, cur, rate) {
+    if (cur === 'COP') {
+      var m = Math.round((eur * rate) / 100000) / 10;
+      return '$ ' + String(m).replace('.', ',') + ' M';
+    }
+    return '€ ' + group(eur);
+  }
+  function dias(n) { return n + (n === 1 ? ' día' : ' días'); }
+  function stopsOf(s) {
+    var list = [s.legs[0].a];
+    s.legs.forEach(function (l) { list.push(l.b); });
+    return list;
+  }
+  function hoursOf(s) { return s.legs.reduce(function (a, l) { return a + l.h; }, 0); }
+  function storeGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function storeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } }
+  function currentScenario() {
+    for (var i = 0; i < scenarios.length; i++) { if (scenarios[i].id === state.sel) return scenarios[i]; }
+    return scenarios[0];
+  }
+  function effRate() { return num('inRate', state.baseRate) * (1 + num('inCushion', 0) / 100); }
+
+  /* ---------- Tasa del euro ---------- */
+  function setFx(kind, text) {
+    state.fx = kind;
+    el('fxDot').className = 'dot ' + kind;
+    el('fxText').textContent = text;
+  }
+  function fmtDate(unix) {
+    try {
+      return new Date(unix * 1000).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (e) { return ''; }
+  }
+  function loadCachedFx() {
+    var raw = storeGet('eurotrip_fx');
+    if (!raw) return false;
+    try {
+      var o = JSON.parse(raw);
+      if (o && o.rate > 0) {
+        el('inRate').value = Math.round(o.rate);
+        setFx('cache', 'Última tasa guardada: 1 € = ' + group(o.rate) + ' COP' + (o.date ? ' (' + o.date + ')' : ''));
+        return true;
+      }
+    } catch (e) { /* ignorar */ }
+    return false;
+  }
+  function fetchFx() {
+    setFx('', 'Consultando la tasa…');
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    fetch('https://open.er-api.com/v6/latest/EUR', ctrl ? { signal: ctrl.signal } : {})
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (d) {
+        clearTimeout(timer);
+        var cop = d && d.rates && d.rates.COP;
+        if (!cop) throw new Error('sin COP');
+        var date = d.time_last_update_unix ? fmtDate(d.time_last_update_unix) : '';
+        el('inRate').value = Math.round(cop);
+        storeSet('eurotrip_fx', JSON.stringify({ rate: cop, date: date }));
+        setFx('live', 'Tasa en vivo: 1 € = ' + group(cop) + ' COP' + (date ? ' (actualizada ' + date + ')' : ''));
+        render();
+      })
+      .catch(function () {
+        clearTimeout(timer);
+        if (!loadCachedFx()) {
+          setFx('manual', 'No se pudo consultar la tasa. Usa el valor manual de abajo.');
+        } else {
+          el('fxText').textContent += ' · sin conexión a la tasa en vivo';
+        }
+        render();
+      });
+  }
+
+  /* ---------- Mapa ---------- */
+  var map = null, layer = null, leafletOk = false;
+
+  function initMap() {
+    if (window.L && el('map')) {
+      try {
+        map = L.map('map', { scrollWheelZoom: false }).setView([45.5, 4], 5);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        layer = L.layerGroup().addTo(map);
+        leafletOk = true;
+        return;
+      } catch (e) { leafletOk = false; }
+    }
+    el('map').hidden = true;
+    el('mapFallback').hidden = false;
+  }
+
+  function drawLeaflet(s) {
+    layer.clearLayers();
+    var pts = [];
+    s.legs.forEach(function (l) {
+      var a = COORDS[l.a], b = COORDS[l.b];
+      var opts = l.mode === 'tren'
+        ? { color: '#1B6CA8', weight: 5, opacity: 0.9 }
+        : { color: '#C2410C', weight: 4, opacity: 0.9, dashArray: '10 8' };
+      L.polyline([a, b], opts).addTo(layer);
+      pts.push(a, b);
+    });
+    var seen = {};
+    stopsOf(s).forEach(function (name) {
+      if (seen[name]) return;
+      seen[name] = true;
+      var extra = name === 'Chur' ? '<br>Suiza: ' + dias(s.suiza) : (name === 'París' ? '<br>París: ' + dias(s.paris) : '');
+      L.circleMarker(COORDS[name], { radius: 9, color: '#0F2A3D', weight: 3, fillColor: '#FFFFFF', fillOpacity: 1 })
+        .bindTooltip(name, { permanent: true, direction: 'top', offset: [0, -8] })
+        .bindPopup('<strong>' + name + '</strong>' + extra)
+        .addTo(layer);
+    });
+    map.fitBounds(L.latLngBounds(pts), { padding: [40, 40] });
+    setTimeout(function () { map.invalidateSize(); }, 150);
+  }
+
+  function drawFallback(s) {
+    var W = 640, H = 560, lonMin = -6, lonMax = 12, latMin = 38.5, latMax = 50;
+    function px(c) { return [(c[1] - lonMin) / (lonMax - lonMin) * W, (latMax - c[0]) / (latMax - latMin) * H]; }
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Esquema de la ruta">';
+    s.legs.forEach(function (l) {
+      var a = px(COORDS[l.a]), b = px(COORDS[l.b]);
+      var style = l.mode === 'tren'
+        ? 'stroke="#1B6CA8" stroke-width="5"'
+        : 'stroke="#C2410C" stroke-width="4" stroke-dasharray="10 8"';
+      svg += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" ' + style + ' stroke-linecap="round"/>';
+    });
+    var seen = {};
+    stopsOf(s).forEach(function (name) {
+      if (seen[name]) return;
+      seen[name] = true;
+      var p = px(COORDS[name]);
+      svg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="#fff" stroke="#0F2A3D" stroke-width="3"/>';
+      svg += '<text x="' + (p[0] + 14) + '" y="' + (p[1] + 5) + '" font-size="16" font-weight="700" fill="#0F2A3D" stroke="#EAF1F6" stroke-width="4" paint-order="stroke">' + name + '</text>';
+    });
+    svg += '</svg><p class="credit" style="margin:8px">Esquema sin conexión al mapa base. Con internet se muestra el mapa de OpenStreetMap.</p>';
+    el('mapFallback').innerHTML = svg;
+  }
+
+  function drawMap(s) {
+    el('mapTitle').textContent = 'Mapa de la ruta del escenario ' + s.id;
+    if (leafletOk) { drawLeaflet(s); } else { drawFallback(s); }
+    el('legs').innerHTML = s.legs.map(function (l) {
+      return '<li><strong>' + l.a + ' → ' + l.b + '</strong>' +
+        '<span class="mode ' + l.mode + '">' + (l.mode === 'tren' ? 'Tren' : 'Vuelo') + '</span>' +
+        '<span class="h">' + l.h + ' h (ejemplo)</span></li>';
+    }).join('');
+  }
+
+  /* ---------- Render ---------- */
+  var lastMapSel = null;
+
+  function render() {
+    var rate = effRate(), budget = num('inBudget', 9000), tripDays = num('inDays', 21);
+    var cur = state.cur, other = cur === 'COP' ? 'EUR' : 'COP';
+    var totals = scenarios.map(function (s) { return s.lines.reduce(function (a, l) { return a + l[1]; }, 0); });
+    var max = Math.max.apply(null, totals);
+
+    el('btnCOP').className = cur === 'COP' ? 'on' : '';
+    el('btnEUR').className = cur === 'EUR' ? 'on' : '';
+    el('fxApplied').textContent = 'Tasa aplicada en los cálculos: 1 € = ' + group(rate) + ' COP (base más colchón).';
+
+    var cards = '', bars = '';
+    scenarios.forEach(function (s, i) {
+      var on = s.id === state.sel, t = totals[i];
+      var stops = stopsOf(s);
+      var route = stops.map(function (st, k) {
+        return '<span class="s">' + st + '</span>' + (k < stops.length - 1 ? '<span class="a" aria-hidden="true">→</span>' : '');
+      }).join('');
+      var lines = s.lines.map(function (l) {
+        return '<div><span>' + l[0] + '</span><span>' + money(l[1], cur, rate) + '</span></div>';
+      }).join('');
+      cards += '<article class="card' + (on ? ' sel' : '') + '">' +
+        '<div class="title"><span class="letter">' + s.id + '</span><h3>' + s.name + '</h3></div>' +
+        '<span class="tag">' + s.kind + '</span>' +
+        '<div class="route">' + route + '</div>' +
+        '<div class="stats">' +
+          '<div class="stat"><small>Suiza</small><strong>' + dias(s.suiza) + '</strong></div>' +
+          '<div class="stat"><small>París</small><strong>' + dias(s.paris) + '</strong></div>' +
+          '<div class="stat"><small>Traslados</small><strong>' + hoursOf(s) + ' h</strong></div>' +
+        '</div>' +
+        '<div class="lines">' + lines + '</div>' +
+        '<div class="total"><small>Total estimado</small><strong>' + money(t, cur, rate) + '</strong><em>Equivale a ' + money(t, other, rate) + '</em></div>' +
+        '<div class="perday"><small>Costo por día en destino</small><strong>' + money(t / (s.suiza + s.paris), cur, rate) + '</strong></div>' +
+        '<p class="concl">' + s.concl + '</p>' +
+        '<button type="button" class="pick" data-id="' + s.id + '">' + (on ? 'Analizando este escenario' : 'Analizar este escenario') + '</button>' +
+      '</article>';
+      bars += '<div class="bar-row' + (on ? ' on' : '') + '"><span class="lbl">Escenario ' + s.id + '</span>' +
+        '<div class="track"><div class="fill" style="width:' + Math.round((t / max) * 100) + '%"></div></div>' +
+        '<span class="val">' + money(t, cur, rate) + '</span></div>';
+    });
+    el('cards').innerHTML = cards;
+    el('bars').innerHTML = bars;
+
+    var s = currentScenario();
+    var idx = scenarios.indexOf(s);
+    var used = s.suiza + s.paris + 2;
+    var remDays = Math.max(0, tripDays - used);
+    var rem = budget - totals[idx];
+    el('freeTitle').textContent = 'Con el escenario ' + state.sel + ', esto te queda libre';
+    el('freeSub').textContent = 'Viaje de ' + dias(tripDays) + ' y presupuesto objetivo de ' + money(budget, cur, rate) + '.';
+    el('remDays').textContent = dias(remDays);
+    el('remBudget').textContent = (rem < 0 ? '− ' : '') + money(Math.abs(rem), cur, rate);
+    el('extras').innerHTML = extrasBase.map(function (e) {
+      var fits = e.n <= remDays;
+      return '<div class="extra"><strong>' + e.name + '</strong>' +
+        '<small>Pide al menos ' + dias(e.n) + ' · costo [por estimar]</small>' +
+        '<span class="badge ' + (fits ? 'ok' : 'no') + '">' + (fits ? 'Cabe en el tiempo' : 'No alcanza el tiempo') + '</span></div>';
+    }).join('');
+
+    if (lastMapSel !== state.sel) { lastMapSel = state.sel; drawMap(s); }
+  }
+
+  /* ---------- Eventos ---------- */
+  el('btnCOP').addEventListener('click', function () { state.cur = 'COP'; render(); });
+  el('btnEUR').addEventListener('click', function () { state.cur = 'EUR'; render(); });
+  el('cards').addEventListener('click', function (ev) {
+    var b = ev.target.closest('.pick');
+    if (b) { state.sel = b.getAttribute('data-id'); render(); }
+  });
+  el('inRate').addEventListener('input', function () {
+    setFx('manual', 'Tasa manual: 1 € = ' + group(num('inRate', 0)) + ' COP');
+    render();
+  });
+  ['inCushion', 'inBudget', 'inDays'].forEach(function (id) { el(id).addEventListener('input', render); });
+  el('btnFx').addEventListener('click', fetchFx);
+
+  /* ---------- Arranque ---------- */
+  initMap();
+  loadCachedFx();
+  render();
+  fetchFx();
+})();
+</script>
+</body>
+</html>
