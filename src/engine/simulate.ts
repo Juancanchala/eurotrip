@@ -1,5 +1,5 @@
-import { overlaps, sub } from './range';
-import { tripTotals, type TripTotals } from './totals';
+import { add, overlaps, projected, scale } from './range';
+import { priceCtx, tripTotals, type TripTotals } from './totals';
 import type { Range, Scenario, TripData } from './types';
 
 /** Devuelve una copia del escenario con `delta` noches más (o menos) en un lugar. */
@@ -22,16 +22,27 @@ export interface NightsSimulation {
   deltaFreeDays: number;
 }
 
+/**
+ * Simula noches de más o de menos en un lugar.
+ * El rango del cambio se calcula solo con lo que cambia (la noche en ese lugar y
+ * el día en casa que se gana o se pierde). Restar los totales completos sumaría
+ * la incertidumbre de todo el viaje y daría un rango sin sentido.
+ */
 export function simulateNights(data: TripData, s: Scenario, placeId: string, delta: number): NightsSimulation {
+  const changed = withNights(s, placeId, delta);
   const before = tripTotals(data, s);
-  const after = tripTotals(data, withNights(s, placeId, delta));
-  return {
-    before,
-    after,
-    deltaTotal: sub(after.total, before.total),
-    deltaScenario: sub(after.scenario.total, before.scenario.total),
-    deltaFreeDays: after.freeDays - before.freeDays,
-  };
+  const after = tripTotals(data, changed);
+
+  const ctx = priceCtx(data.settings);
+  const idx = s.stays.findIndex((st) => st.placeId === placeId);
+  const stay = s.stays[idx]!;
+  const applied = changed.stays[idx]!.nights - stay.nights;
+  const perNight = add(projected(stay.lodgingPerNight, ctx), projected(stay.mealsPerDay, ctx), projected(stay.localPerDay, ctx));
+  const deltaScenario = scale(perNight, applied);
+  const homeDelta = Math.max(0, after.freeDays) - Math.max(0, before.freeDays);
+  const deltaTotal = add(deltaScenario, scale(projected(data.settings.homeDaily, ctx), homeDelta));
+
+  return { before, after, deltaTotal, deltaScenario, deltaFreeDays: after.freeDays - before.freeDays };
 }
 
 export interface ScenarioRow {

@@ -171,6 +171,18 @@ describe('simulación y comparación', () => {
     expect(sim.deltaFreeDays).toBe(-1);
     expect(sim.deltaTotal.eur).toBe(370); // 420 − 50 de un día en casa
   });
+  it('el rango del cambio solo refleja lo que cambia', () => {
+    const sim = simulateNights(data, A, 'par', 1);
+    // Noche en París: hotel 200–300 + comidas 120 + local 50 = 370–470. Menos un día en casa 40–60.
+    expect(sim.deltaScenario).toEqual({ eur: 420, min: 370, max: 470 });
+    expect(sim.deltaTotal).toEqual({ eur: 370, min: 310, max: 430 });
+    // Quitar una noche invierte el signo.
+    const minus = simulateNights(data, A, 'par', -1);
+    expect(minus.deltaScenario).toEqual({ eur: -420, min: -470, max: -370 });
+    // Si ya no hay noches que quitar, no cambia nada.
+    const none = simulateNights(data, withNights(A, 'par', -10), 'par', -1);
+    expect(none.deltaTotal).toEqual({ eur: 0, min: 0, max: 0 });
+  });
   it('withNights no muta y no baja de cero', () => {
     const s2 = withNights(A, 'chu', -5);
     expect(s2.stays[0]!.nights).toBe(0);
