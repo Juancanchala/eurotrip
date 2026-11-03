@@ -12,6 +12,7 @@ export const c = (eur: number, min?: number, max?: number, status: Cost['status'
 export function fixture(): TripData {
   return {
     version: 1,
+    seedRevision: 2,
     settings: {
       startDate: '2027-10-06',
       totalDays: 20,

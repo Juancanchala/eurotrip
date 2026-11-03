@@ -57,3 +57,12 @@ describe('itinerario con fechas', () => {
     expect(scenarioAlerts(buildItinerary(d, findScenario(d, 'A')))).toEqual([]);
   });
 });
+
+describe('día más pesado', () => {
+  it('suma las horas de los tramos de cada día y devuelve el mayor', async () => {
+    const { longestTravelDay } = await import('./itinerary');
+    const it = buildItinerary(data, A);
+    // a2 (7 h) es el tramo más largo y va solo ese día.
+    expect(longestTravelDay(it)).toEqual({ date: '2027-10-11', hours: 7 });
+  });
+});

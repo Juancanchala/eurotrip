@@ -134,159 +134,345 @@
   "scenarios": [
     {
       "id": "A",
-      "name": "Ruta abierta por los Alpes hasta París",
+      "name": "París primero y Bernina hacia el sur",
       "kind": "abierto",
-      "summary": "Entra por Zúrich, cruza los Alpes en el Bernina Express, baja por Italia y llega a París en tren. No repite tramos.",
+      "summary": "Madrid ✈ París, TGV Lyria a Zúrich y tren a Chur, Bernina Express de la mañana (8:28) hasta Tirano y regreso a Madrid en avión desde Milán. Solo 2 vuelos.",
       "legs": [
         {
           "id": "A1",
           "from": "madrid",
-          "to": "zurich",
+          "to": "paris",
           "mode": "vuelo",
           "hours": 5,
           "cost": {
-            "eur": 330,
-            "min": 200,
-            "max": 500,
+            "eur": 300,
             "status": "estimado",
-            "source": "https://www.kayak.co.uk/flight-routes/Madrid-Barajas-MAD/Zurich-ZRH",
-            "checkedAt": "2026-11-02",
-            "note": "3 × ~110 € solo ida; vuelo de 2 h 20, más aeropuertos"
+            "min": 180,
+            "max": 480,
+            "source": "https://www.kayak.com/flight-routes/Madrid-Barajas-MAD/Paris-PAR",
+            "checkedAt": "2026-11-03",
+            "note": "3 personas, solo ida; incluye llegar al aeropuerto"
           }
         },
         {
           "id": "A2",
-          "from": "zurich",
-          "to": "chur",
+          "from": "paris",
+          "to": "zurich",
           "mode": "tren",
-          "hours": 1.5,
+          "hours": 4.5,
           "cost": {
-            "eur": 95,
-            "min": 60,
-            "max": 140,
+            "eur": 260,
             "status": "estimado",
-            "source": "https://www.omio.co.uk/trains/zurich-airport/chur-colsf",
-            "checkedAt": "2026-11-02",
-            "note": "2 adultos ~CHF 40 c/u; niña (11) gratis con Swiss Family Card si hay Half Fare Card"
-          }
+            "min": 150,
+            "max": 420,
+            "source": "https://www.rome2rio.com/s/Paris/Chur",
+            "checkedAt": "2026-11-03",
+            "note": "TGV Lyria París Gare de Lyon → Zúrich HB (~4 h). 3 personas"
+          },
+          "label": "TGV Lyria",
+          "risk": "TGV Lyria no llega a Chur: se cambia en Zúrich (o Basilea). En 2026 Lyria anunció horarios modificados por obras; verificar el calendario de oct 2027."
         },
         {
           "id": "A3",
-          "from": "chur",
-          "to": "tirano",
+          "from": "zurich",
+          "to": "chur",
           "mode": "tren",
-          "hours": 4.25,
-          "label": "Bernina Express",
+          "hours": 1.25,
           "cost": {
-            "eur": 320,
-            "min": 280,
-            "max": 380,
+            "eur": 95,
             "status": "estimado",
-            "source": "https://www.european-traveler.com/switzerland/saving-tips-traveling-bernina-express-train",
-            "checkedAt": "2026-11-02",
-            "note": "Adulto 2.ª ~CHF 66 + reserva CHF 44 (temporada alta hasta 25 oct). La niña paga medio pasaje y la reserva completa."
+            "min": 60,
+            "max": 140,
+            "source": "https://www.omio.co.uk/trains/zurich-airport/chur-colsf",
+            "checkedAt": "2026-11-03",
+            "note": "La niña viaja gratis con Swiss Family Card si un adulto tiene Half Fare Card"
           }
         },
         {
           "id": "A4",
-          "from": "tirano",
-          "to": "torino",
+          "from": "chur",
+          "to": "tirano",
           "mode": "tren",
           "hours": 4.25,
           "cost": {
-            "eur": 100,
-            "min": 60,
-            "max": 160,
+            "eur": 320,
             "status": "estimado",
-            "source": "https://www.rome2rio.com/s/Tirano/Milan",
-            "checkedAt": "2026-11-02",
-            "note": "Regional Tirano–Milán (~2 h 30, ~12 €) + Frecciarossa Milán–Turín (~1 h)"
-          }
+            "min": 280,
+            "max": 380,
+            "source": "https://www.european-traveler.com/switzerland/saving-tips-traveling-bernina-express-train",
+            "checkedAt": "2026-11-03",
+            "note": "Sale de Chur ~8:28 y llega a Tirano ~12:49 (verificar horario 2027). Reserva obligatoria por persona."
+          },
+          "label": "Bernina Express"
         },
         {
           "id": "A5",
-          "from": "torino",
-          "to": "paris",
+          "from": "tirano",
+          "to": "milano",
           "mode": "tren",
-          "hours": 6,
-          "label": "TGV / Frecciarossa",
+          "hours": 2.5,
           "cost": {
-            "eur": 210,
-            "min": 110,
-            "max": 380,
+            "eur": 35,
             "status": "estimado",
-            "source": "https://seat61.com/trains-and-routes/paris-to-milan-by-train.htm",
-            "checkedAt": "2026-11-02",
-            "note": "Desde 29 € por persona con mucha anticipación; precio tipo aerolínea"
-          },
-          "risk": "La línea Chambéry–Modane estuvo cerrada por obras del 12 sep al 9 oct de 2026. Verificar el calendario de obras de 2027 antes de reservar; alternativa: vuelo Turín/Milán–París."
+            "min": 25,
+            "max": 50,
+            "source": "https://www.rome2rio.com/s/Tirano/Milan",
+            "checkedAt": "2026-11-03",
+            "note": "Regional Trenord a Milano Centrale"
+          }
         },
         {
           "id": "A6",
+          "from": "milano",
+          "to": "madrid",
+          "mode": "vuelo",
+          "hours": 5,
+          "cost": {
+            "eur": 270,
+            "status": "estimado",
+            "min": 150,
+            "max": 450,
+            "source": "https://www.milanobycar.com/blog/nearest-airport-to-tirano-italy",
+            "checkedAt": "2026-11-03",
+            "note": "Desde Milano Centrale: Linate ~30 min, Malpensa ~50 min (Malpensa Express), Bergamo ~1 h en bus. Vuelos a Madrid de Iberia, Vueling, easyJet o Ryanair."
+          }
+        }
+      ],
+      "stays": [
+        {
+          "placeId": "paris",
+          "nights": 3,
+          "lodgingPerNight": {
+            "eur": 240,
+            "status": "estimado",
+            "min": 150,
+            "max": 350,
+            "source": "https://www.kayak.com/Paris-Hotels_Family.Hff.36014.hotel.ksp",
+            "checkedAt": "2026-11-03",
+            "note": "Octubre es temporada media (shoulder). Sube en semanas de ferias y con la Toussaint a finales de mes. Hoteles de oct 2027 ya se pueden cotizar."
+          },
+          "mealsPerDay": {
+            "eur": 120,
+            "status": "estimado",
+            "min": 90,
+            "max": 170
+          },
+          "localPerDay": {
+            "eur": 60,
+            "status": "estimado",
+            "min": 35,
+            "max": 110,
+            "note": "Metro y una entrada principal por día"
+          }
+        },
+        {
+          "placeId": "chur",
+          "nights": 2,
+          "lodgingPerNight": {
+            "eur": 230,
+            "status": "estimado",
+            "min": 160,
+            "max": 300,
+            "source": "https://momondo.com/hotels/chur",
+            "checkedAt": "2026-11-03",
+            "note": "Habitación familiar"
+          },
+          "mealsPerDay": {
+            "eur": 160,
+            "status": "estimado",
+            "min": 110,
+            "max": 220,
+            "source": "https://www.tour-switzerland.ch/guides/budget/",
+            "checkedAt": "2026-11-03",
+            "note": "Supermercado + una comida en restaurante, 3 personas"
+          },
+          "localPerDay": {
+            "eur": 40,
+            "status": "estimado",
+            "min": 20,
+            "max": 80
+          },
+          "note": "Llegada por la tarde; día completo en Chur y alrededores; Bernina a la mañana siguiente"
+        },
+        {
+          "placeId": "tirano",
+          "nights": 1,
+          "note": "Tarde libre en Tirano tras el Bernina; tren a Milán y vuelo al día siguiente",
+          "lodgingPerNight": {
+            "eur": 130,
+            "status": "estimado",
+            "min": 90,
+            "max": 180,
+            "note": "Precios italianos, más bajos que en Suiza"
+          },
+          "mealsPerDay": {
+            "eur": 100,
+            "status": "estimado",
+            "min": 75,
+            "max": 140
+          },
+          "localPerDay": {
+            "eur": 20,
+            "status": "estimado",
+            "min": 10,
+            "max": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Inversa: Bernina hacia el norte y París al final",
+      "kind": "abierto",
+      "summary": "Madrid ✈ Milán, tren a Tirano, Bernina Express de la tarde (14:24) hasta Chur, tren a Zúrich y TGV Lyria a París; regreso a Madrid en avión desde París. Solo 2 vuelos.",
+      "legs": [
+        {
+          "id": "B1",
+          "from": "madrid",
+          "to": "milano",
+          "mode": "vuelo",
+          "hours": 5,
+          "cost": {
+            "eur": 270,
+            "status": "estimado",
+            "min": 150,
+            "max": 450,
+            "source": "https://www.milanobycar.com/blog/nearest-airport-to-tirano-italy",
+            "checkedAt": "2026-11-03",
+            "note": "Desde Milano Centrale: Linate ~30 min, Malpensa ~50 min (Malpensa Express), Bergamo ~1 h en bus. Vuelos a Madrid de Iberia, Vueling, easyJet o Ryanair."
+          }
+        },
+        {
+          "id": "B2",
+          "from": "milano",
+          "to": "tirano",
+          "mode": "tren",
+          "hours": 2.5,
+          "cost": {
+            "eur": 35,
+            "status": "estimado",
+            "min": 25,
+            "max": 50,
+            "source": "https://www.rome2rio.com/s/Tirano/Milan",
+            "checkedAt": "2026-11-03"
+          }
+        },
+        {
+          "id": "B3",
+          "from": "tirano",
+          "to": "chur",
+          "mode": "tren",
+          "hours": 4.25,
+          "cost": {
+            "eur": 320,
+            "status": "estimado",
+            "min": 280,
+            "max": 380,
+            "source": "https://www.european-traveler.com/switzerland/saving-tips-traveling-bernina-express-train",
+            "checkedAt": "2026-11-03",
+            "note": "Sale de Tirano ~14:24 y llega a Chur ~18:22 (verificar horario 2027). El último tramo puede ir con poca luz."
+          },
+          "label": "Bernina Express"
+        },
+        {
+          "id": "B4",
+          "from": "chur",
+          "to": "zurich",
+          "mode": "tren",
+          "hours": 1.25,
+          "cost": {
+            "eur": 95,
+            "status": "estimado",
+            "min": 60,
+            "max": 140,
+            "source": "https://www.omio.co.uk/trains/zurich-airport/chur-colsf",
+            "checkedAt": "2026-11-03"
+          }
+        },
+        {
+          "id": "B5",
+          "from": "zurich",
+          "to": "paris",
+          "mode": "tren",
+          "hours": 4.5,
+          "cost": {
+            "eur": 260,
+            "status": "estimado",
+            "min": 150,
+            "max": 420,
+            "source": "https://www.rome2rio.com/s/Paris/Chur",
+            "checkedAt": "2026-11-03"
+          },
+          "label": "TGV Lyria",
+          "risk": "TGV Lyria no llega a Chur: se cambia en Zúrich (o Basilea). En 2026 Lyria anunció horarios modificados por obras; verificar el calendario de oct 2027."
+        },
+        {
+          "id": "B6",
           "from": "paris",
           "to": "madrid",
           "mode": "vuelo",
           "hours": 5,
           "cost": {
             "eur": 300,
+            "status": "estimado",
             "min": 180,
             "max": 480,
-            "status": "estimado",
             "source": "https://www.kayak.com/flight-routes/Madrid-Barajas-MAD/Paris-PAR",
-            "checkedAt": "2026-11-02",
-            "note": "3 × ~100 € solo ida"
+            "checkedAt": "2026-11-03"
           }
         }
       ],
       "stays": [
         {
+          "placeId": "tirano",
+          "nights": 1,
+          "note": "Llegada desde Milán; mañana libre y Bernina de la tarde",
+          "lodgingPerNight": {
+            "eur": 130,
+            "status": "estimado",
+            "min": 90,
+            "max": 180,
+            "note": "Precios italianos, más bajos que en Suiza"
+          },
+          "mealsPerDay": {
+            "eur": 100,
+            "status": "estimado",
+            "min": 75,
+            "max": 140
+          },
+          "localPerDay": {
+            "eur": 20,
+            "status": "estimado",
+            "min": 10,
+            "max": 40
+          }
+        },
+        {
           "placeId": "chur",
           "nights": 2,
           "lodgingPerNight": {
             "eur": 230,
+            "status": "estimado",
             "min": 160,
             "max": 300,
-            "status": "estimado",
             "source": "https://momondo.com/hotels/chur",
-            "checkedAt": "2026-11-02",
+            "checkedAt": "2026-11-03",
             "note": "Habitación familiar"
           },
           "mealsPerDay": {
             "eur": 160,
+            "status": "estimado",
             "min": 110,
             "max": 220,
-            "status": "estimado",
             "source": "https://www.tour-switzerland.ch/guides/budget/",
-            "checkedAt": "2026-11-02",
+            "checkedAt": "2026-11-03",
             "note": "Supermercado + una comida en restaurante, 3 personas"
           },
           "localPerDay": {
             "eur": 40,
+            "status": "estimado",
             "min": 20,
-            "max": 80,
-            "status": "estimado"
-          }
-        },
-        {
-          "placeId": "torino",
-          "nights": 1,
-          "lodgingPerNight": {
-            "eur": 120,
-            "min": 85,
-            "max": 170,
-            "status": "estimado"
-          },
-          "mealsPerDay": {
-            "eur": 90,
-            "min": 65,
-            "max": 130,
-            "status": "estimado"
-          },
-          "localPerDay": {
-            "eur": 25,
-            "min": 10,
-            "max": 50,
-            "status": "estimado"
+            "max": 80
           }
         },
         {
@@ -294,298 +480,97 @@
           "nights": 3,
           "lodgingPerNight": {
             "eur": 240,
+            "status": "estimado",
             "min": 150,
             "max": 350,
-            "status": "estimado",
             "source": "https://www.kayak.com/Paris-Hotels_Family.Hff.36014.hotel.ksp",
-            "checkedAt": "2026-11-02",
-            "note": "Octubre es temporada media (shoulder). Sube en semanas de ferias (p. ej. Art Basel Paris) y con las vacaciones escolares de la Toussaint a finales de mes. Hoteles de oct 2027 ya se pueden cotizar."
+            "checkedAt": "2026-11-03",
+            "note": "Octubre es temporada media (shoulder). Sube en semanas de ferias y con la Toussaint a finales de mes. Hoteles de oct 2027 ya se pueden cotizar."
           },
           "mealsPerDay": {
             "eur": 120,
+            "status": "estimado",
             "min": 90,
-            "max": 170,
-            "status": "estimado"
+            "max": 170
           },
           "localPerDay": {
             "eur": 60,
+            "status": "estimado",
             "min": 35,
             "max": 110,
-            "status": "estimado",
             "note": "Metro y una entrada principal por día"
           }
         }
       ]
     },
     {
-      "id": "B",
-      "name": "Ida y vuelta: Suiza por Zúrich y París aparte",
-      "kind": "ida_vuelta",
-      "summary": "Dos salidas cortas desde Madrid. Base en Chur con Bernina ida y vuelta en el día, y luego París.",
-      "legs": [
-        {
-          "id": "B1",
-          "from": "madrid",
-          "to": "zurich",
-          "mode": "vuelo",
-          "hours": 5,
-          "cost": {
-            "eur": 330,
-            "min": 200,
-            "max": 500,
-            "status": "estimado",
-            "source": "https://www.kayak.co.uk/flight-routes/Madrid-Barajas-MAD/Zurich-ZRH",
-            "checkedAt": "2026-11-02"
-          }
-        },
-        {
-          "id": "B2",
-          "from": "zurich",
-          "to": "chur",
-          "mode": "tren",
-          "hours": 1.5,
-          "cost": {
-            "eur": 95,
-            "min": 60,
-            "max": 140,
-            "status": "estimado",
-            "source": "https://www.omio.co.uk/trains/zurich-airport/chur-colsf",
-            "checkedAt": "2026-11-02"
-          }
-        },
-        {
-          "id": "B3",
-          "from": "chur",
-          "to": "tirano",
-          "mode": "tren",
-          "hours": 4.25,
-          "label": "Bernina Express",
-          "cost": {
-            "eur": 320,
-            "min": 280,
-            "max": 380,
-            "status": "estimado",
-            "source": "https://www.european-traveler.com/switzerland/saving-tips-traveling-bernina-express-train",
-            "checkedAt": "2026-11-02"
-          }
-        },
-        {
-          "id": "B4",
-          "from": "tirano",
-          "to": "chur",
-          "mode": "tren",
-          "hours": 4.5,
-          "label": "Regional RhB (misma vía, sin reserva)",
-          "cost": {
-            "eur": 175,
-            "min": 120,
-            "max": 210,
-            "status": "estimado",
-            "note": "Pasaje sin suplemento de reserva"
-          },
-          "risk": "Más de 8 horas de tren en un día con un niño."
-        },
-        {
-          "id": "B5",
-          "from": "chur",
-          "to": "zurich",
-          "mode": "tren",
-          "hours": 1.5,
-          "cost": {
-            "eur": 95,
-            "min": 60,
-            "max": 140,
-            "status": "estimado"
-          }
-        },
-        {
-          "id": "B6",
-          "from": "zurich",
-          "to": "madrid",
-          "mode": "vuelo",
-          "hours": 5,
-          "cost": {
-            "eur": 330,
-            "min": 200,
-            "max": 500,
-            "status": "estimado"
-          }
-        },
-        {
-          "id": "B7",
-          "from": "madrid",
-          "to": "paris",
-          "mode": "vuelo",
-          "hours": 5,
-          "cost": {
-            "eur": 300,
-            "min": 180,
-            "max": 480,
-            "status": "estimado",
-            "source": "https://www.kayak.com/flight-routes/Madrid-Barajas-MAD/Paris-PAR",
-            "checkedAt": "2026-11-02"
-          }
-        },
-        {
-          "id": "B8",
-          "from": "paris",
-          "to": "madrid",
-          "mode": "vuelo",
-          "hours": 5,
-          "cost": {
-            "eur": 300,
-            "min": 180,
-            "max": 480,
-            "status": "estimado"
-          }
-        }
-      ],
-      "stays": [
-        {
-          "placeId": "chur",
-          "nights": 1,
-          "lodgingPerNight": {
-            "eur": 230,
-            "min": 160,
-            "max": 300,
-            "status": "estimado",
-            "source": "https://momondo.com/hotels/chur",
-            "checkedAt": "2026-11-02"
-          },
-          "mealsPerDay": {
-            "eur": 160,
-            "min": 110,
-            "max": 220,
-            "status": "estimado",
-            "source": "https://www.tour-switzerland.ch/guides/budget/",
-            "checkedAt": "2026-11-02"
-          },
-          "localPerDay": {
-            "eur": 40,
-            "min": 20,
-            "max": 80,
-            "status": "estimado"
-          }
-        },
-        {
-          "placeId": "chur",
-          "nights": 1,
-          "lodgingPerNight": {
-            "eur": 230,
-            "min": 160,
-            "max": 300,
-            "status": "estimado",
-            "source": "https://momondo.com/hotels/chur",
-            "checkedAt": "2026-11-02"
-          },
-          "mealsPerDay": {
-            "eur": 160,
-            "min": 110,
-            "max": 220,
-            "status": "estimado",
-            "source": "https://www.tour-switzerland.ch/guides/budget/",
-            "checkedAt": "2026-11-02"
-          },
-          "localPerDay": {
-            "eur": 40,
-            "min": 20,
-            "max": 80,
-            "status": "estimado"
-          },
-          "note": "Segunda noche, al volver del Bernina"
-        },
-        {
-          "placeId": "paris",
-          "nights": 2,
-          "lodgingPerNight": {
-            "eur": 240,
-            "min": 150,
-            "max": 350,
-            "status": "estimado",
-            "source": "https://www.kayak.com/Paris-Hotels_Family.Hff.36014.hotel.ksp",
-            "checkedAt": "2026-11-02",
-            "note": "Octubre es temporada media (shoulder). Sube en semanas de ferias (p. ej. Art Basel Paris) y con las vacaciones escolares de la Toussaint a finales de mes. Hoteles de oct 2027 ya se pueden cotizar."
-          },
-          "mealsPerDay": {
-            "eur": 120,
-            "min": 90,
-            "max": 170,
-            "status": "estimado"
-          },
-          "localPerDay": {
-            "eur": 60,
-            "min": 35,
-            "max": 110,
-            "status": "estimado"
-          }
-        }
-      ]
-    },
-    {
       "id": "C",
-      "name": "Ida y vuelta por Milán con base alpina en Tirano",
-      "kind": "ida_vuelta",
-      "summary": "Vuelo a Milán y base económica en Tirano, del lado italiano. Bernina hasta St. Moritz y regreso. París en una segunda salida.",
+      "name": "Como A, pero Madrid → París en tren",
+      "kind": "abierto",
+      "summary": "Igual que A, cambiando el vuelo Madrid → París por AVE a Barcelona y TGV a París (un solo día largo de tren). Un vuelo en total.",
       "legs": [
         {
           "id": "C1",
           "from": "madrid",
-          "to": "milano",
-          "mode": "vuelo",
-          "hours": 5,
+          "to": "paris",
+          "mode": "tren",
+          "hours": 10.5,
           "cost": {
-            "eur": 270,
-            "min": 150,
-            "max": 450,
+            "eur": 330,
             "status": "estimado",
-            "note": "Sin fuente aún: pedir al asistente una referencia"
-          }
+            "min": 200,
+            "max": 520,
+            "note": "AVE Madrid–Barcelona (~2 h 30) + TGV Barcelona–París (~6 h 30) y conexión. 3 personas. Sin fuente aún: pedir al asistente una referencia."
+          },
+          "label": "AVE + TGV por Barcelona"
         },
         {
           "id": "C2",
-          "from": "milano",
-          "to": "tirano",
+          "from": "paris",
+          "to": "zurich",
           "mode": "tren",
-          "hours": 2.5,
+          "hours": 4.5,
           "cost": {
-            "eur": 35,
-            "min": 25,
-            "max": 50,
+            "eur": 260,
             "status": "estimado",
-            "source": "https://www.rome2rio.com/s/Tirano/Milan",
-            "checkedAt": "2026-11-02"
-          }
+            "min": 150,
+            "max": 420,
+            "source": "https://www.rome2rio.com/s/Paris/Chur",
+            "checkedAt": "2026-11-03"
+          },
+          "label": "TGV Lyria",
+          "risk": "TGV Lyria no llega a Chur: se cambia en Zúrich (o Basilea). En 2026 Lyria anunció horarios modificados por obras; verificar el calendario de oct 2027."
         },
         {
           "id": "C3",
-          "from": "tirano",
-          "to": "st-moritz",
+          "from": "zurich",
+          "to": "chur",
           "mode": "tren",
-          "hours": 2.5,
-          "label": "Bernina Express",
+          "hours": 1.25,
           "cost": {
-            "eur": 230,
-            "min": 190,
-            "max": 280,
+            "eur": 95,
             "status": "estimado",
-            "source": "https://www.european-traveler.com/switzerland/saving-tips-traveling-bernina-express-train",
-            "checkedAt": "2026-11-02",
-            "note": "Tramo más corto, misma reserva obligatoria por persona"
+            "min": 60,
+            "max": 140,
+            "source": "https://www.omio.co.uk/trains/zurich-airport/chur-colsf",
+            "checkedAt": "2026-11-03"
           }
         },
         {
           "id": "C4",
-          "from": "st-moritz",
+          "from": "chur",
           "to": "tirano",
           "mode": "tren",
-          "hours": 2.5,
-          "label": "Regional RhB",
+          "hours": 4.25,
           "cost": {
-            "eur": 90,
-            "min": 70,
-            "max": 120,
-            "status": "estimado"
-          }
+            "eur": 320,
+            "status": "estimado",
+            "min": 280,
+            "max": 380,
+            "source": "https://www.european-traveler.com/switzerland/saving-tips-traveling-bernina-express-train",
+            "checkedAt": "2026-11-03"
+          },
+          "label": "Bernina Express"
         },
         {
           "id": "C5",
@@ -595,9 +580,11 @@
           "hours": 2.5,
           "cost": {
             "eur": 35,
+            "status": "estimado",
             "min": 25,
             "max": 50,
-            "status": "estimado"
+            "source": "https://www.rome2rio.com/s/Tirano/Milan",
+            "checkedAt": "2026-11-03"
           }
         },
         {
@@ -608,111 +595,92 @@
           "hours": 5,
           "cost": {
             "eur": 270,
+            "status": "estimado",
             "min": 150,
             "max": 450,
-            "status": "estimado"
-          }
-        },
-        {
-          "id": "C7",
-          "from": "madrid",
-          "to": "paris",
-          "mode": "vuelo",
-          "hours": 5,
-          "cost": {
-            "eur": 300,
-            "min": 180,
-            "max": 480,
-            "status": "estimado",
-            "source": "https://www.kayak.com/flight-routes/Madrid-Barajas-MAD/Paris-PAR",
-            "checkedAt": "2026-11-02"
-          }
-        },
-        {
-          "id": "C8",
-          "from": "paris",
-          "to": "madrid",
-          "mode": "vuelo",
-          "hours": 5,
-          "cost": {
-            "eur": 300,
-            "min": 180,
-            "max": 480,
-            "status": "estimado"
+            "source": "https://www.milanobycar.com/blog/nearest-airport-to-tirano-italy",
+            "checkedAt": "2026-11-03",
+            "note": "Desde Milano Centrale: Linate ~30 min, Malpensa ~50 min (Malpensa Express), Bergamo ~1 h en bus. Vuelos a Madrid de Iberia, Vueling, easyJet o Ryanair."
           }
         }
       ],
       "stays": [
         {
-          "placeId": "tirano",
-          "nights": 1,
+          "placeId": "paris",
+          "nights": 3,
           "lodgingPerNight": {
-            "eur": 130,
-            "min": 90,
-            "max": 180,
+            "eur": 240,
             "status": "estimado",
-            "note": "Precios italianos, más bajos que en Suiza"
+            "min": 150,
+            "max": 350,
+            "source": "https://www.kayak.com/Paris-Hotels_Family.Hff.36014.hotel.ksp",
+            "checkedAt": "2026-11-03",
+            "note": "Octubre es temporada media (shoulder). Sube en semanas de ferias y con la Toussaint a finales de mes. Hoteles de oct 2027 ya se pueden cotizar."
           },
           "mealsPerDay": {
-            "eur": 100,
-            "min": 75,
-            "max": 140,
-            "status": "estimado"
+            "eur": 120,
+            "status": "estimado",
+            "min": 90,
+            "max": 170
           },
           "localPerDay": {
-            "eur": 20,
-            "min": 10,
-            "max": 40,
-            "status": "estimado"
+            "eur": 60,
+            "status": "estimado",
+            "min": 35,
+            "max": 110,
+            "note": "Metro y una entrada principal por día"
+          }
+        },
+        {
+          "placeId": "chur",
+          "nights": 2,
+          "lodgingPerNight": {
+            "eur": 230,
+            "status": "estimado",
+            "min": 160,
+            "max": 300,
+            "source": "https://momondo.com/hotels/chur",
+            "checkedAt": "2026-11-03",
+            "note": "Habitación familiar"
+          },
+          "mealsPerDay": {
+            "eur": 160,
+            "status": "estimado",
+            "min": 110,
+            "max": 220,
+            "source": "https://www.tour-switzerland.ch/guides/budget/",
+            "checkedAt": "2026-11-03",
+            "note": "Supermercado + una comida en restaurante, 3 personas"
+          },
+          "localPerDay": {
+            "eur": 40,
+            "status": "estimado",
+            "min": 20,
+            "max": 80
           }
         },
         {
           "placeId": "tirano",
           "nights": 1,
+          "note": "Tarde libre en Tirano; vuelo al día siguiente",
           "lodgingPerNight": {
             "eur": 130,
+            "status": "estimado",
             "min": 90,
             "max": 180,
-            "status": "estimado",
             "note": "Precios italianos, más bajos que en Suiza"
           },
           "mealsPerDay": {
             "eur": 100,
+            "status": "estimado",
             "min": 75,
-            "max": 140,
-            "status": "estimado"
+            "max": 140
           },
           "localPerDay": {
             "eur": 20,
-            "min": 10,
-            "max": 40,
-            "status": "estimado"
-          },
-          "note": "Segunda noche, al volver del Bernina"
-        },
-        {
-          "placeId": "paris",
-          "nights": 3,
-          "lodgingPerNight": {
-            "eur": 240,
-            "min": 150,
-            "max": 350,
             "status": "estimado",
-            "source": "https://www.kayak.com/Paris-Hotels_Family.Hff.36014.hotel.ksp",
-            "checkedAt": "2026-11-02",
-            "note": "Octubre es temporada media (shoulder). Sube en semanas de ferias (p. ej. Art Basel Paris) y con las vacaciones escolares de la Toussaint a finales de mes. Hoteles de oct 2027 ya se pueden cotizar."
-          },
-          "mealsPerDay": {
-            "eur": 120,
-            "min": 90,
-            "max": 170,
-            "status": "estimado"
-          },
-          "localPerDay": {
-            "eur": 60,
-            "min": 35,
-            "max": 110,
-            "status": "estimado"
+            "min": 10,
+            "max": 40
           }
         }
       ]
@@ -798,6 +766,7 @@
   ],
   "assumptions": [
     "Salida desde Medellín (MDE) el 6 oct 2027, con llegada a Madrid el 7 oct; regreso ~26 oct 2027. Esos 2 días de vuelo transatlántico no se cuentan como disponibles.",
+    "Rutas abiertas con solo 2 vuelos (salir y volver a Madrid). No hay tren directo París–Chur: TGV Lyria a Zúrich (~4 h) y tren a Chur (~1 h 15). Bernina Express: Chur ~8:28 → Tirano ~12:49; Tirano ~14:24 → Chur ~18:22 (horarios 2024–2026, verificar 2027). Aeropuerto más cercano a Tirano: Milán (Linate, Malpensa o Bergamo) vía Milano Centrale.",
     "Viajan 2 adultos y 1 niña de 11 años. Todos los costos son el total para los 3, en EUR, salvo los fijados en COP.",
     "El vuelo de ida está cotizado en pesos (2 M COP por persona): no lo afecta la variación del euro.",
     "Presupuesto objetivo provisional: la familia aún lo está definiendo.",
@@ -848,13 +817,13 @@
       "from": "2027-09-12",
       "to": "2027-10-09",
       "placeIds": [
-        "torino",
-        "paris"
+        "torino"
       ],
       "labelIncludes": "TGV",
       "level": "aviso",
-      "message": "En 2026 la línea Turín–París cerró por obras del 12 sep al 9 oct. Verificar el calendario de obras de 2027 antes de reservar.",
+      "message": "Obras en la línea Turín–París (en 2026 cerró del 12 sep al 9 oct). Solo afecta trenes que pasan por Turín; verificar el calendario de 2027.",
       "source": "https://everyrail.com/trains/milan-to-paris/"
     }
-  ]
+  ],
+  "seedRevision": 2
 }

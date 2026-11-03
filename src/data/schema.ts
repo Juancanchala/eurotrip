@@ -95,6 +95,7 @@ export const AlertSchema = z.object({
 
 export const TripDataSchema = z.object({
   version: z.literal(1),
+  seedRevision: z.number().int().min(1).default(1),
   settings: SettingsSchema,
   places: z.array(PlaceSchema).min(1),
   scenarios: z.array(ScenarioSchema).min(1).max(6),

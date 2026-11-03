@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { CloudTripRepository, ConflictError, type SyncState } from '../data/cloud';
 import { seedData } from '../data/repository';
+import { migrateTrip } from '../data/migrations';
 import { effectiveRate, type Currency } from '../engine/money';
 import type { TripData } from '../engine/types';
 
@@ -64,7 +65,15 @@ export function TripProvider({ children, repo }: { children: ReactNode; repo?: C
     let alive = true;
     repository.load().then((d) => {
       if (!alive) return;
+      const m = migrateTrip(d, seedData());
       adopt(d);
+      if (m.changed) {
+        // Se aplica como un cambio normal: se guarda para todos y la versión anterior queda en el historial.
+        setData(m.data);
+        setNotice(
+          'Se actualizaron las rutas: A (París primero y Bernina hacia el sur), B (la inversa) y C (A con tren Madrid–París). Tus costos se conservaron; la versión anterior está en el historial.',
+        );
+      }
       setLoaded(true);
     });
     return () => {
@@ -116,7 +125,7 @@ export function TripProvider({ children, repo }: { children: ReactNode; repo?: C
         .refresh(latest.current)
         .then((r) => {
           if (r) {
-            adopt(r.data);
+            adopt(migrateTrip(r.data, seedData()).data);
             setNotice(`Datos actualizados${r.updatedBy ? ` por ${r.updatedBy}` : ' desde otro dispositivo'}.`);
           }
         })

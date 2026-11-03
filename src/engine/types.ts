@@ -151,6 +151,8 @@ export interface CalendarAlert {
 
 export interface TripData {
   version: 1;
+  /** Versión de las rutas de referencia con que se crearon (ver src/data/migrations.ts). */
+  seedRevision: number;
   settings: Settings;
   places: Place[];
   scenarios: Scenario[];

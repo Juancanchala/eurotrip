@@ -36,6 +36,12 @@ describe('seed', () => {
     }
   });
 
+  it('las rutas de referencia tienen solo 2 vuelos (salir y volver a Madrid), salvo C que tiene 1', () => {
+    const flights = Object.fromEntries(seed.scenarios.map((s) => [s.id, s.legs.filter((l) => l.mode === 'vuelo').length]));
+    expect(flights).toEqual({ A: 2, B: 2, C: 1 });
+    expect(seed.scenarios.every((s) => s.kind === 'abierto')).toBe(true);
+  });
+
   it('produce una comparación con los tres escenarios', () => {
     expect(compareScenarios(seed).rows).toHaveLength(3);
   });

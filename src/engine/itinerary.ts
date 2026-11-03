@@ -134,6 +134,16 @@ export function buildItinerary(data: TripData, s: Scenario): Itinerary {
   return { days, overflowDays, trips };
 }
 
+/** El día con más horas de traslado: dice qué tan pesado es el escenario para la familia. */
+export function longestTravelDay(it: Itinerary): { date: string; hours: number } {
+  let best = { date: it.days[0]?.date ?? '', hours: 0 };
+  for (const d of it.days) {
+    const h = d.legs.reduce((a, l) => a + l.hours, 0);
+    if (h > best.hours) best = { date: d.date, hours: h };
+  }
+  return best;
+}
+
 /** Todas las alertas que tocan el escenario, sin repetir, con las fechas en que aplican. */
 export function scenarioAlerts(it: Itinerary): { alert: CalendarAlert; dates: string[] }[] {
   const byId = new Map<string, { alert: CalendarAlert; dates: string[] }>();

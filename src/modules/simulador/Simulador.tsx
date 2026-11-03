@@ -2,6 +2,7 @@ import {
   CATEGORY_LABEL,
   buildItinerary,
   compareScenarios,
+  longestTravelDay,
   nightsByPlace,
   scenarioAlerts,
   simulateNights,
@@ -18,6 +19,9 @@ import { RouteLine } from '../../components/RouteLine';
 import { hours, placeNamer, plural } from '../../lib/format';
 import { useTrip } from '../../lib/store';
 
+/** ["A","B","C"] → "A, B y C" */
+const joinY = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`);
+
 const KIND_LABEL = { abierto: 'Ruta abierta', ida_vuelta: 'Ida y vuelta por Madrid' } as const;
 const CATS: Category[] = ['vuelos', 'trenes', 'bus_auto', 'hospedaje', 'comidas', 'local'];
 
@@ -27,6 +31,9 @@ export function Simulador() {
   const name = placeNamer(data);
   const sel = data.settings.selectedScenarioId;
   const byId = new Map(cmp.rows.map((r) => [r.id, r.totals]));
+  // "Más económico" solo si le saca más de 1 % al segundo.
+  const [r1, r2] = cmp.rows;
+  const clearWinner = !!r1 && (!r2 || r2.totals.total.eur - r1.totals.total.eur > r1.totals.total.eur * 0.01);
 
   return (
     <>
@@ -45,7 +52,7 @@ export function Simulador() {
               s={s}
               t={byId.get(s.id)!}
               selected={s.id === sel}
-              cheapest={s.id === cmp.cheapestId}
+              cheapest={s.id === cmp.cheapestId && clearWinner}
               name={name}
               onPick={() =>
                 mutate((d) => {
@@ -66,8 +73,14 @@ function Verdict({ cmp }: { cmp: Comparison }) {
   const { data } = useTrip();
   const [first, second] = cmp.rows;
   if (!first) return null;
-  const fastest = [...cmp.rows].sort((a, b) => a.totals.hours - b.totals.hours)[0]!;
-  const mostAway = [...cmp.rows].sort((a, b) => b.totals.nightsAway - a.totals.nightsAway)[0]!;
+  const heavy = cmp.rows.map((r) => ({ id: r.id, ...longestTravelDay(buildItinerary(data, data.scenarios.find((s) => s.id === r.id)!)) }));
+  const alertCounts = cmp.rows.map((r) => {
+    const sc = data.scenarios.find((s) => s.id === r.id)!;
+    return { id: r.id, n: scenarioAlerts(buildItinerary(data, sc)).length + sc.legs.filter((l) => l.risk).length };
+  });
+  // Diferencia menor al 1 %: empate práctico.
+  const tie = second && Math.abs(second.totals.total.eur - first.totals.total.eur) <= first.totals.total.eur * 0.01;
+  const tied = tie ? cmp.rows.filter((r) => Math.abs(r.totals.total.eur - first.totals.total.eur) <= first.totals.total.eur * 0.01).map((r) => r.id) : [];
   const sel = cmp.rows.find((r) => r.id === data.settings.selectedScenarioId) ?? first;
   const drivers = uncertaintyDrivers(data, data.scenarios.find((s) => s.id === sel.id)!, placeNamer(data));
 
@@ -76,14 +89,23 @@ function Verdict({ cmp }: { cmp: Comparison }) {
       <div className="verdict-main">
         <span className="verdict-kicker">Lectura del motor</span>
         <p>
-          <strong>Escenario {first.id}</strong> es el más económico
-          {second && (
+          {tie ? (
             <>
-              : <Money eur={second.totals.total.eur - first.totals.total.eur} /> menos que el {second.id}
+              <strong>{joinY(tied)} cuestan prácticamente lo mismo</strong> (diferencia menor al 1 %). La decisión entre ellos es de comodidad y
+              calendario, no de dinero.{' '}
+            </>
+          ) : (
+            <>
+              <strong>Escenario {first.id}</strong> es el más económico
+              {second && (
+                <>
+                  : <Money eur={second.totals.total.eur - first.totals.total.eur} /> menos que el {second.id}
+                </>
+              )}
+              .{' '}
             </>
           )}
-          .{' '}
-          {cmp.decisive ? (
+          {tie ? null : cmp.decisive ? (
             <>La diferencia se mantiene incluso en el peor caso.</>
           ) : (
             <>
@@ -91,14 +113,24 @@ function Verdict({ cmp }: { cmp: Comparison }) {
             </>
           )}
         </p>
-        <ul className="verdict-facts">
-          <li>
-            Menos horas de traslado: <strong>{fastest.id}</strong> ({hours(fastest.totals.hours)})
-          </li>
-          <li>
-            Más noches de paseo: <strong>{mostAway.id}</strong> ({plural(mostAway.totals.nightsAway, 'noche', 'noches')})
-          </li>
-        </ul>
+        <dl className="verdict-facts">
+          <div>
+            <dt>Horas de traslado</dt>
+            <dd>{cmp.rows.map((r) => `${r.id} ${hours(r.totals.hours)}`).join(' · ')}</dd>
+          </div>
+          <div>
+            <dt>Día más pesado</dt>
+            <dd>{heavy.map((h) => `${h.id} ${hours(h.hours)}`).join(' · ')}</dd>
+          </div>
+          <div>
+            <dt>Noches de paseo</dt>
+            <dd>{cmp.rows.map((r) => `${r.id} ${r.totals.nightsAway}`).join(' · ')}</dd>
+          </div>
+          <div>
+            <dt>Alertas de calendario y ruta</dt>
+            <dd>{alertCounts.map((a) => `${a.id} ${a.n}`).join(' · ')}</dd>
+          </div>
+        </dl>
       </div>
       {drivers.length > 0 && (
         <div className="verdict-next">
@@ -134,7 +166,9 @@ function Ticket({
   const { data, currency } = useTrip();
   const other = currency === 'COP' ? 'EUR' : 'COP';
   const nights = nightsByPlace(s);
-  const alerts = scenarioAlerts(buildItinerary(data, s));
+  const itin = buildItinerary(data, s);
+  const alerts = scenarioAlerts(itin);
+  const heaviest = longestTravelDay(itin);
   const risks = s.legs.filter((l) => l.risk).length;
   const stays = Object.entries(nights).filter(([, n]) => n > 0);
 
@@ -165,6 +199,14 @@ function Ticket({
           <div>
             <small>Traslados</small>
             <strong>{hours(t.hours)}</strong>
+          </div>
+          <div>
+            <small>Día más pesado</small>
+            <strong>{hours(heaviest.hours)}</strong>
+          </div>
+          <div>
+            <small>Vuelos</small>
+            <strong>{s.legs.filter((l) => l.mode === 'vuelo').length}</strong>
           </div>
         </div>
         <dl className="tk-lines">

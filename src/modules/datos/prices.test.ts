@@ -9,16 +9,22 @@ describe('lista de precios', () => {
   const find = (label: string) => groups.find((g) => g.label === label)!;
 
   it('agrupa el mismo vuelo de varios escenarios en una sola fila', () => {
-    const g = find('París → Madrid');
+    const g = find('Milán → Madrid');
     expect(g.section).toBe('vuelos');
+    expect(g.scenarios).toEqual(['A', 'C']);
+    expect(g.refs).toHaveLength(2);
+  });
+
+  it('agrupa el hotel de una ciudad en todos los escenarios', () => {
+    const g = find('Hotel en Chur');
     expect(g.scenarios).toEqual(['A', 'B', 'C']);
     expect(g.refs).toHaveLength(3);
   });
 
-  it('agrupa el hotel de una ciudad, aunque tenga varias estadías', () => {
-    const g = find('Hotel en Chur');
-    expect(g.scenarios).toEqual(['A', 'B']);
-    expect(g.refs).toHaveLength(3); // A + dos estadías en B
+  it('agrupa estadías repetidas del mismo lugar dentro de un escenario', () => {
+    const data = seedData();
+    data.scenarios[0]!.stays.push(structuredClone(data.scenarios[0]!.stays[1]!));
+    expect(priceGroups(data).find((g) => g.label === 'Hotel en Chur')!.refs).toHaveLength(4);
   });
 
   it('incluye comunes, extras y días en casa, en orden de secciones', () => {
@@ -29,11 +35,11 @@ describe('lista de precios', () => {
 
   it('cotizar una vez actualiza todos los escenarios y el total', () => {
     const data = seedData();
-    const g = priceGroups(data).find((x) => x.label === 'París → Madrid')!;
-    const before = tripTotals(data, findScenario(data, 'B')).total.eur;
+    const g = priceGroups(data).find((x) => x.label === 'Milán → Madrid')!;
+    const before = tripTotals(data, findScenario(data, 'C')).total.eur;
     applyToGroup(data, g, (c) => withStatus(withValue(c, 1_500_000, 'COP', 4635), 'cotizado', '2026-11-03'));
     for (const r of g.refs) expect(getCost(data, r)).toMatchObject({ cop: 1_500_000, status: 'cotizado', checkedAt: '2026-11-03' });
-    expect(tripTotals(data, findScenario(data, 'B')).total.eur).not.toBe(before);
+    expect(tripTotals(data, findScenario(data, 'C')).total.eur).not.toBe(before);
   });
 });
 
