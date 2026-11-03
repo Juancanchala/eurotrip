@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Header } from './components/Header';
 import { Pulse } from './components/Pulse';
 import { Tabs } from './components/Tabs';
@@ -8,6 +8,7 @@ import { Itinerario } from './modules/itinerario/Itinerario';
 import { Presupuesto } from './modules/presupuesto/Presupuesto';
 import { Simulador } from './modules/simulador/Simulador';
 import { Tasa } from './modules/tasa/Tasa';
+import { Asistente } from './modules/asistente/Asistente';
 import { useRoute, type ModuleId } from './lib/route';
 import { useTrip } from './lib/store';
 
@@ -33,6 +34,24 @@ const VIEWS: Record<ModuleId, () => ReactNode> = {
   tasa: () => <Tasa />,
 };
 
+/** Botón flotante en celular; se oculta cuando el asistente ya está a la vista. */
+function AssistantFab() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById('asistente');
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setVisible(!!e?.isIntersecting), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  if (visible) return null;
+  return (
+    <a className="fab" href="#asistente" onClick={() => setTimeout(() => document.getElementById('ai-q')?.focus(), 300)}>
+      Preguntar al asistente
+    </a>
+  );
+}
+
 export function App() {
   const route = useRoute();
   const { data, saveError } = useTrip();
@@ -55,16 +74,9 @@ export function App() {
           {saveError && <div className="notice error">{saveError}</div>}
           {VIEWS[route]()}
         </main>
-        <aside className="assistant" aria-label="Asistente de viaje">
-          <div className="assistant-head">
-            <strong>Asistente de viaje</strong>
-            <span>Conoce tus escenarios y tu presupuesto</span>
-          </div>
-          <div className="assistant-body">
-            <p>Se conecta en el paso 6. Responderá con cálculos del motor, nunca con cifras inventadas.</p>
-          </div>
-        </aside>
+        <Asistente />
       </div>
+      <AssistantFab />
       <footer className="foot">
         Precios estimados para octubre de 2027: referencias consultadas el 2 nov 2026, proyectadas con +{data.settings.priceAdjustPct} % de inflación. Los
         precios cotizados o reservados se usan tal cual.

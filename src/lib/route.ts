@@ -12,16 +12,22 @@ export const MODULES = [
 
 export type ModuleId = (typeof MODULES)[number]['id'];
 
-function parse(): ModuleId {
-  const h = window.location.hash.replace(/^#\/?/, '');
-  return (MODULES.find((m) => m.id === h)?.id ?? 'simulador') as ModuleId;
+/** Solo los hash con forma "#/módulo" son rutas; "#asistente" o "#contenido" son anclas de la página. */
+function parse(): ModuleId | null {
+  const h = window.location.hash;
+  if (h && !h.startsWith('#/')) return null;
+  const id = h.slice(2);
+  return (MODULES.find((m) => m.id === id)?.id ?? 'simulador') as ModuleId;
 }
 
 /** Ruteo por hash: funciona en Netlify sin reglas de redirección. */
 export function useRoute(): ModuleId {
-  const [route, setRoute] = useState<ModuleId>(parse);
+  const [route, setRoute] = useState<ModuleId>(() => parse() ?? 'simulador');
   useEffect(() => {
-    const on = () => setRoute(parse());
+    const on = () => {
+      const r = parse();
+      if (r) setRoute(r);
+    };
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
