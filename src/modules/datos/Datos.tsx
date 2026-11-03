@@ -3,6 +3,8 @@ import { validateTrip, type Cost, type Leg, type Mode, type Scenario, type Stay,
 import { CostEditor } from '../../components/CostEditor';
 import { NumberField, SelectField, TextField, isDateOrEmpty, isUrlOrEmpty } from '../../components/Fields';
 import { exportTrip, importTrip } from '../../data/repository';
+import { getAuthor, setAuthor, type VersionInfo } from '../../data/cloud';
+import { fmtWhen } from '../../components/SyncBadge';
 import { MODE_LABEL, hours, placeNamer } from '../../lib/format';
 import { useTrip } from '../../lib/store';
 
@@ -498,12 +500,15 @@ function AlertsEditor() {
   );
 }
 
-/* ---------------- Respaldo ---------------- */
+/* ---------------- Compartir, historial y respaldo ---------------- */
 
 function Backup() {
-  const { data, replace, reset } = useTrip();
+  const { data, replace, reset, repo, sync } = useTrip();
   const file = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [author, setAuthorState] = useState(getAuthor);
+  const [versions, setVersions] = useState<VersionInfo[] | null>(null);
+  const [loadingV, setLoadingV] = useState(false);
 
   const download = () => {
     const blob = new Blob([exportTrip(data)], { type: 'application/json' });
@@ -517,17 +522,77 @@ function Backup() {
   const load = async (f: File) => {
     const r = importTrip(await f.text());
     if (!r.ok) return setMsg({ ok: false, text: `No se importó: ${r.errors.slice(0, 3).join(' · ')}` });
-    if (!window.confirm('¿Reemplazar los datos actuales por los del respaldo?')) return;
+    if (!window.confirm('¿Reemplazar los datos de toda la familia por los del respaldo? (Queda en el historial y se puede deshacer.)')) return;
     replace(r.data);
-    setMsg({ ok: true, text: 'Datos importados.' });
+    setMsg({ ok: true, text: 'Datos importados para todos.' });
   };
+  const showVersions = async () => {
+    setLoadingV(true);
+    try {
+      setVersions(await repo.versions());
+    } catch (e) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : 'No se pudo leer el historial' });
+    } finally {
+      setLoadingV(false);
+    }
+  };
+  const restore = async (v: VersionInfo) => {
+    if (!window.confirm(`¿Volver a la versión ${v.revision} (${fmtWhen(v.updatedAt)}${v.updatedBy ? `, ${v.updatedBy}` : ''}) para toda la familia?`)) return;
+    try {
+      replace(await repo.version(v.revision));
+      setMsg({ ok: true, text: `Versión ${v.revision} restaurada. La versión actual queda en el historial.` });
+    } catch (e) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : 'No se pudo restaurar' });
+    }
+  };
+  const shared = sync.status !== 'solo_local';
 
   return (
-    <Section title="Respaldo y compartir">
+    <Section title="Compartir, historial y respaldo">
       <p className="muted small">
-        Los datos viven en este navegador. Para pasarlos a otro celular o computador, descarga el respaldo y cárgalo allá. (Más adelante se pueden guardar
-        en la nube para que toda la familia vea lo mismo.)
+        {shared
+          ? 'Los datos son los mismos para toda la familia: lo que cambie una persona lo ven las demás (se actualiza al abrir la app y cada minuto).'
+          : 'Este entorno no tiene servicio compartido: los datos quedan solo en este navegador.'}
       </p>
+      <TextField
+        label="Tu nombre en este dispositivo (aparece en el historial)"
+        placeholder="Juan"
+        value={author}
+        onChange={(v) => {
+          setAuthorState(v);
+          setAuthor(v);
+        }}
+      />
+
+      {shared && (
+        <div className="history">
+          <div className="row">
+            <button type="button" className="btn" onClick={() => void showVersions()} disabled={loadingV}>
+              {loadingV ? 'Cargando…' : versions ? 'Actualizar historial' : 'Ver historial de cambios'}
+            </button>
+          </div>
+          {versions && versions.length === 0 && <p className="muted small">Aún no hay versiones guardadas.</p>}
+          {versions && versions.length > 0 && (
+            <ol className="versions">
+              {versions.map((v) => (
+                <li key={v.revision}>
+                  <span>
+                    <strong>v{v.revision}</strong> · {fmtWhen(v.updatedAt)}
+                    {v.updatedBy ? ` · ${v.updatedBy}` : ''}
+                    {v.revision === sync.revision && <span className="badge cotizado">Actual</span>}
+                  </span>
+                  {v.revision !== sync.revision && (
+                    <button type="button" className="btn" onClick={() => void restore(v)}>
+                      Restaurar
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
+
       <div className="row">
         <button type="button" className="btn primary" onClick={download}>
           Descargar respaldo (.json)
@@ -550,7 +615,7 @@ function Backup() {
           type="button"
           className="btn danger"
           onClick={() => {
-            if (window.confirm('¿Volver a los datos de referencia originales? Se pierden tus cambios (descarga un respaldo antes).')) {
+            if (window.confirm('¿Volver a los datos de referencia originales para toda la familia? La versión actual queda en el historial.')) {
               void reset().then(() => setMsg({ ok: true, text: 'Datos restablecidos.' }));
             }
           }}

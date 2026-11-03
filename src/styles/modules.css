@@ -980,3 +980,75 @@
   display: inline-flex;
   align-items: center;
 }
+
+/* ---------- Sincronización ---------- */
+.pulse-who {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--muted);
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9db0bf;
+  flex: none;
+}
+.sync.sincronizado .sync-dot {
+  background: #1b7f4b;
+}
+.sync.guardando .sync-dot,
+.sync.cargando .sync-dot {
+  background: var(--blue);
+}
+.sync.sin_conexion,
+.sync.error {
+  color: var(--orange-ink);
+}
+.sync.sin_conexion .sync-dot,
+.sync.error .sync-dot {
+  background: var(--orange);
+}
+.sync-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+  justify-content: space-between;
+  background: var(--blue-soft);
+  border-color: #a9cbe8;
+  color: var(--blue-ink);
+}
+.versions {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.versions li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ground);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: var(--fs-sm);
+}
+.versions .badge {
+  margin-left: 6px;
+}

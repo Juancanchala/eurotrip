@@ -54,7 +54,7 @@ function AssistantFab() {
 
 export function App() {
   const route = useRoute();
-  const { data, saveError } = useTrip();
+  const { data, saveError, notice, dismissNotice } = useTrip();
 
   // Al cambiar de módulo, volver arriba del contenido.
   useEffect(() => {
@@ -72,6 +72,14 @@ export function App() {
       <div className="layout">
         <main id="contenido" tabIndex={-1}>
           {saveError && <div className="notice error">{saveError}</div>}
+          {notice && (
+            <div className="notice sync-notice" role="status">
+              <span>{notice}</span>
+              <button type="button" className="btn" onClick={dismissNotice}>
+                Entendido
+              </button>
+            </div>
+          )}
           {VIEWS[route]()}
         </main>
         <Asistente />

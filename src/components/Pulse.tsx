@@ -1,6 +1,7 @@
 import { findScenario, tripTotals } from '../engine';
 import { useTrip } from '../lib/store';
 import { Money, MoneyRange } from './Money';
+import { SyncBadge } from './SyncBadge';
 
 /** Franja con lo esencial del escenario elegido. Todo sale del motor. */
 export function Pulse() {
@@ -13,9 +14,12 @@ export function Pulse() {
   return (
     <section className="pulse" aria-label={`Resumen del escenario ${s.id}`}>
       <div className="pulse-head">
-        <p>
-          Analizando <strong>escenario {s.id}</strong> · {s.name}
-        </p>
+        <div className="pulse-who">
+          <p>
+            Analizando <strong>escenario {s.id}</strong> · {s.name}
+          </p>
+          <SyncBadge />
+        </div>
         <div className="toggle" role="group" aria-label="Moneda">
           {(['COP', 'EUR'] as const).map((c) => (
             <button key={c} type="button" aria-pressed={currency === c} onClick={() => setCurrency(c)}>

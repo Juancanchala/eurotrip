@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { CloudTripRepository, ConflictError, type SyncState } from '../data/cloud';
+import { seedData } from '../data/repository';
 import { effectiveRate, type Currency } from '../engine/money';
 import type { TripData } from '../engine/types';
-import { LocalStorageTripRepository, seedData, type TripRepository } from '../data/repository';
 
 interface TripContextValue {
   data: TripData;
-  /** Aplica un cambio inmutable y lo persiste a través del repository. */
+  /** Aplica un cambio inmutable; se guarda para toda la familia. */
   update: (fn: (draft: TripData) => TripData) => void;
   /** Edita una copia profunda de los datos (más cómodo para formularios). */
   mutate: (fn: (draft: TripData) => void) => void;
@@ -16,11 +17,18 @@ interface TripContextValue {
   /** Tasa EUR→COP con colchón: la única que usa la UI para convertir. */
   rate: number;
   saveError: string | null;
+  sync: SyncState;
+  /** Aviso de sincronización (p. ej. cambios de otra persona). */
+  notice: string | null;
+  dismissNotice: () => void;
+  repo: CloudTripRepository;
 }
 
 const TripContext = createContext<TripContextValue | null>(null);
 
 const CURRENCY_KEY = 'eurotrip:currency';
+const SAVE_DELAY = 700;
+const REFRESH_EVERY = 45_000;
 
 function readCurrency(): Currency {
   try {
@@ -30,47 +38,101 @@ function readCurrency(): Currency {
   }
 }
 
-export function TripProvider({ children, repo }: { children: ReactNode; repo?: TripRepository }) {
-  const repository = useMemo(() => repo ?? new LocalStorageTripRepository(), [repo]);
-  // El seed se muestra al instante; los datos guardados lo reemplazan al cargar.
+export function TripProvider({ children, repo }: { children: ReactNode; repo?: CloudTripRepository }) {
+  const repository = useMemo(() => repo ?? new CloudTripRepository(), [repo]);
+  // El seed se muestra al instante; los datos compartidos lo reemplazan al cargar.
   const [data, setData] = useState<TripData>(() => seedData());
   const [loaded, setLoaded] = useState(false);
-  // Solo se guarda lo que el usuario cambia; así las mejoras del seed llegan mientras no haya ediciones.
-  const dirty = useRef(false);
   const [currency, setCurrencyState] = useState<Currency>(readCurrency);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [sync, setSync] = useState<SyncState>({ status: 'cargando', revision: 0 });
+  const [notice, setNotice] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /** Última versión que coincide con la guardada; si los datos son iguales no se vuelve a guardar. */
+  const synced = useRef<string>('');
+  const latest = useRef(data);
+  latest.current = data;
+
+  useEffect(() => repository.subscribe(setSync), [repository]);
+
+  const adopt = useCallback((d: TripData) => {
+    synced.current = JSON.stringify(d);
+    setData(d);
+  }, []);
 
   useEffect(() => {
     let alive = true;
     repository.load().then((d) => {
-      if (alive) {
-        setData(d);
-        setLoaded(true);
-      }
+      if (!alive) return;
+      adopt(d);
+      setLoaded(true);
     });
     return () => {
       alive = false;
     };
-  }, [repository]);
+  }, [repository, adopt]);
 
-  // Guardado con pequeño retraso para no escribir en cada tecla.
+  const onConflict = useCallback(
+    (e: unknown) => {
+      if (e instanceof ConflictError && e.remote) {
+        adopt(e.remote.data);
+        setNotice(
+          `${e.remote.updatedBy ?? 'Otra persona'} guardó cambios justo antes. Se cargó la versión más reciente; revisa y repite tu último cambio si hace falta.`,
+        );
+        return true;
+      }
+      return false;
+    },
+    [adopt],
+  );
+
+  // Guardado con retraso para no escribir en cada tecla.
   useEffect(() => {
-    if (!loaded || !dirty.current) return;
+    if (!loaded) return;
+    const snapshot = JSON.stringify(data);
+    if (snapshot === synced.current) return;
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
+      timer.current = undefined;
       repository
         .save(data)
-        .then(() => setSaveError(null))
-        .catch((e: unknown) => setSaveError(e instanceof Error ? e.message : 'No se pudo guardar'));
-    }, 300);
+        .then(() => {
+          synced.current = snapshot;
+          setSaveError(null);
+        })
+        .catch((e: unknown) => {
+          if (!onConflict(e)) setSaveError(e instanceof Error ? e.message : 'No se pudo guardar');
+        });
+    }, SAVE_DELAY);
     return () => clearTimeout(timer.current);
-  }, [data, loaded, repository]);
+  }, [data, loaded, repository, onConflict]);
 
-  const update = useCallback((fn: (d: TripData) => TripData) => {
-    dirty.current = true;
-    setData((d) => fn(d));
-  }, []);
+  // Trae cambios de otros al volver a la app y cada cierto tiempo (si no hay una edición en curso).
+  useEffect(() => {
+    if (!loaded) return;
+    const check = () => {
+      if (document.visibilityState !== 'visible' || timer.current) return;
+      repository
+        .refresh(latest.current)
+        .then((r) => {
+          if (r) {
+            adopt(r.data);
+            setNotice(`Datos actualizados${r.updatedBy ? ` por ${r.updatedBy}` : ' desde otro dispositivo'}.`);
+          }
+        })
+        .catch(onConflict);
+    };
+    const id = setInterval(check, REFRESH_EVERY);
+    document.addEventListener('visibilitychange', check);
+    window.addEventListener('online', check);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', check);
+      window.removeEventListener('online', check);
+    };
+  }, [loaded, repository, adopt, onConflict]);
+
+  const update = useCallback((fn: (d: TripData) => TripData) => setData((d) => fn(d)), []);
   const mutate = useCallback(
     (fn: (draft: TripData) => void) =>
       update((d) => {
@@ -80,14 +142,14 @@ export function TripProvider({ children, repo }: { children: ReactNode; repo?: T
       }),
     [update],
   );
-  const replace = useCallback((d: TripData) => {
-    dirty.current = true;
-    setData(d);
-  }, []);
+  const replace = useCallback((d: TripData) => setData(d), []);
   const reset = useCallback(async () => {
-    dirty.current = false;
-    setData(await repository.reset());
-  }, [repository]);
+    try {
+      adopt(await repository.reset());
+    } catch (e) {
+      if (!onConflict(e)) setSaveError(e instanceof Error ? e.message : 'No se pudo restablecer');
+    }
+  }, [repository, adopt, onConflict]);
   const setCurrency = useCallback((c: Currency) => {
     setCurrencyState(c);
     try {
@@ -96,12 +158,13 @@ export function TripProvider({ children, repo }: { children: ReactNode; repo?: T
       /* sin almacenamiento */
     }
   }, []);
+  const dismissNotice = useCallback(() => setNotice(null), []);
 
   const rate = effectiveRate(data.settings.baseRate, data.settings.cushionPct);
 
   const value = useMemo(
-    () => ({ data, update, mutate, replace, reset, currency, setCurrency, rate, saveError }),
-    [data, update, mutate, replace, reset, currency, setCurrency, rate, saveError],
+    () => ({ data, update, mutate, replace, reset, currency, setCurrency, rate, saveError, sync, notice, dismissNotice, repo: repository }),
+    [data, update, mutate, replace, reset, currency, setCurrency, rate, saveError, sync, notice, dismissNotice, repository],
   );
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
 }
