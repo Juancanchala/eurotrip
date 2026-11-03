@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { Header } from './components/Header';
 import { Pulse } from './components/Pulse';
 import { Tabs } from './components/Tabs';
@@ -9,24 +9,18 @@ import { Presupuesto } from './modules/presupuesto/Presupuesto';
 import { Simulador } from './modules/simulador/Simulador';
 import { Tasa } from './modules/tasa/Tasa';
 import { Asistente } from './modules/asistente/Asistente';
+// El mapa (Leaflet) se descarga solo al abrir ese módulo.
+const Mapa = lazy(() => import('./modules/mapa/Mapa').then((m) => ({ default: m.Mapa })));
 import { useRoute, type ModuleId } from './lib/route';
 import { useTrip } from './lib/store';
 
-function Soon({ title, step, what }: { title: string; step: number; what: string }) {
-  return (
-    <section className="panel" aria-labelledby="soon-title">
-      <h2 id="soon-title">{title}</h2>
-      <div className="soon">
-        <strong>Se construye en el paso {step}</strong>
-        <span>{what}</span>
-      </div>
-    </section>
-  );
-}
-
 const VIEWS: Record<ModuleId, () => ReactNode> = {
   simulador: () => <Simulador />,
-  mapa: () => <Soon title="Mapa" step={5} what="Mapa con la ruta del escenario, tramos y popups por parada." />,
+  mapa: () => (
+    <Suspense fallback={<section className="panel" aria-busy="true"><h2>Mapa</h2><p className="muted">Cargando mapa…</p></section>}>
+      <Mapa />
+    </Suspense>
+  ),
   presupuesto: () => <Presupuesto />,
   itinerario: () => <Itinerario />,
   'dias-libres': () => <DiasLibres />,
