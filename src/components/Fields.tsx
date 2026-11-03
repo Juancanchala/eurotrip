@@ -1,14 +1,7 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
+import { formatNumber, parseNumber } from '../lib/number';
 
-/** Acepta "1.234,5", "1234.5" o "1 234". */
-export function parseNumber(s: string): number | null {
-  const t = s.trim().replace(/\s/g, '');
-  if (!t) return null;
-  // Si hay coma, la coma es decimal y los puntos son miles.
-  const norm = t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t;
-  const n = Number(norm);
-  return Number.isFinite(n) ? n : null;
-}
+export { parseNumber };
 
 interface NumberFieldProps {
   label: ReactNode;
@@ -22,15 +15,18 @@ interface NumberFieldProps {
   suffix?: string;
   hint?: ReactNode;
   className?: string;
+  /** Oculta la etiqueta visualmente (sigue disponible para lectores de pantalla). */
+  hideLabel?: boolean;
 }
 
 /** Campo numérico que no pelea con el usuario: guarda solo valores válidos y deja escribir libremente. */
-export function NumberField({ label, value, onChange, min, max, step, integer, optional, suffix, hint, className }: NumberFieldProps) {
+export function NumberField({ label, value, onChange, min, max, step, integer, optional, suffix, hint, className, hideLabel }: NumberFieldProps) {
   const id = useId();
-  const [text, setText] = useState(value === undefined ? '' : String(value));
+  const show = (v: number | undefined) => (v === undefined ? '' : formatNumber(v));
+  const [text, setText] = useState(show(value));
   const [focused, setFocused] = useState(false);
   useEffect(() => {
-    if (!focused) setText(value === undefined ? '' : String(value));
+    if (!focused) setText(show(value));
   }, [value, focused]);
 
   const n = parseNumber(text);
@@ -51,7 +47,7 @@ export function NumberField({ label, value, onChange, min, max, step, integer, o
 
   return (
     <label className={`field${error ? ' invalid' : ''}${className ? ` ${className}` : ''}`} htmlFor={id}>
-      <span className="field-label">{label}</span>
+      <span className={hideLabel ? 'sr-only' : 'field-label'}>{label}</span>
       <span className="field-input">
         <input
           id={id}

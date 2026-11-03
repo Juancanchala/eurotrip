@@ -7,6 +7,7 @@ import { getAuthor, setAuthor, type VersionInfo } from '../../data/cloud';
 import { fmtWhen } from '../../components/SyncBadge';
 import { MODE_LABEL, hours, placeNamer } from '../../lib/format';
 import { useTrip } from '../../lib/store';
+import { PriceList } from './PriceList';
 
 const MODES: Mode[] = ['tren', 'vuelo', 'bus', 'auto'];
 const newCost = (): Cost => ({ eur: 0, status: 'estimado' });
@@ -47,8 +48,8 @@ export function Datos() {
           <div>
             <h2 id="dat-title">Datos y precios</h2>
             <p>
-              Todo lo que calcula la app sale de aquí. Al tener un precio real, márquenlo como <strong>cotizado</strong> o <strong>reservado</strong>: el
-              rango se cierra y la certeza sube.
+              Todo lo que calcula la app sale de aquí. Abajo están los <strong>precios</strong> listos para editar; más abajo, la estructura de cada
+              escenario (tramos, noches, lugares).
             </p>
           </div>
         </div>
@@ -64,6 +65,7 @@ export function Datos() {
           <p className="ok-line">✓ Datos coherentes: todos los recorridos salen y vuelven a casa.</p>
         )}
       </section>
+      <PriceList />
       <ScenariosEditor />
       <TripEditor />
       <CommonEditor />
@@ -138,7 +140,7 @@ function ScenariosEditor() {
   };
 
   return (
-    <Section title="Escenarios: tramos y noches" open>
+    <Section title="Escenarios: tramos y noches">
       <div className="row-between">
         <div className="toggle" role="group" aria-label="Escenario a editar">
           {data.scenarios.map((x) => (
